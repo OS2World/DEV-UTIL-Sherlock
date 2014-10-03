@@ -1,0 +1,18 @@
+;/*
+;**  Sherlock - Copyright 1992, 1993, 1994
+;**    Harfmann Software
+;**    Compuserve: 73147,213
+;**    All rights reserved
+;*/
+LIBRARY HLL
+
+PROTMODE
+
+DATA MULTIPLE NONSHARED READWRITE LOADONCALL
+
+CODE LOADONCALL
+
+EXPORTS
+; functions
+    isKnownModule
+    linkPriority

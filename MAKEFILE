@@ -1,0 +1,114 @@
+#/*
+#**  Sherlock - Copyright 1992, 1993, 1994
+#**    Harfmann Software
+#**    Compuserve: 73147,213
+#**    All rights reserved
+#*/
+
+#
+# Compile & link flags.
+#
+#CFLAGS  = /BATCH /W3 /Sm /Ss+ /G3s
+#LFLAGS  = /NOI /BATCH /FAR /PACKC /PACKD /ST:16384 /MAP
+CFLAGS	= /BATCH /W3 /Sm /Ss+ /G3s /Ti
+LFLAGS	= /NOI /BATCH /FAR /PACKC /PACKD /ST:16384 /MAP /CO
+
+#
+# General globals
+#
+DEBUG_OBJS    = objs\Debug.obj objs\SrcDisp.obj objs\Dispatch.obj   \
+		objs\HexDump.obj
+SHERLOCK_OBJS = objs\Debug2.obj objs\SrcDisp2.obj objs\Disp2.obj    \
+		objs\HexDmp2.obj
+OBJS  = objs\AsmDisp.obj     objs\BrkPoint.obj	  objs\Except.obj   \
+	objs\Expr.obj	     objs\NoDebug.obj	  objs\Process.obj  \
+	objs\Register.obj    objs\Source.obj	  objs\Watch.obj
+
+
+all: debug.exe sherlock.exe
+
+.SUFFIXES:
+.SUFFIXES: .obj .c
+
+objs\AsmDisp.obj:   AsmDisp.c  Debug.h Debugger.h SrcInter.h Source.h SrcDisp.h
+	icc /c $(CFLAGS) /Fo$@ AsmDisp.c
+
+objs\BrkPoint.obj:  BrkPoint.c Debug.h Debugger.h SrcInter.h Source.h BrkPoint.h
+	icc /c $(CFLAGS) /Fo$@ BrkPoint.c
+
+objs\Debug.obj:     Debug.C    Debug.h Debugger.h Source.h Watch.h \
+		BrkPoint.h Except.h Register.h SrcInter.h \
+		SrcDisp.h ProcStat.h
+	icc /c $(CFLAGS) /Fo$@ Debug.C
+
+objs\Process.obj:   Process.c  debug.h debugger.h procstat.h
+	icc /c $(CFLAGS) /Fo$@ Process.c
+
+objs\Dispatch.obj:  Dispatch.c Debug.h Debugger.h SrcInter.h Source.h
+	icc /c $(CFLAGS) /Fo$@ Dispatch.c
+
+objs\Except.obj:    Except.c   Debug.h Debugger.h Except.h BrkPoint.h
+	icc /c $(CFLAGS) /Fo$@ Except.c
+
+objs\Expr.obj:	    Expr.c     Debug.h Debugger.h SrcInter.h Source.h
+	icc /c $(CFLAGS) /Fo$@ Expr.c
+
+objs\HexDump.obj:   HexDump.c  Debug.h Debugger.h SrcInter.h Source.h
+	icc /c $(CFLAGS) /Fo$@ HexDump.c
+
+objs\NoDebug.obj:   NoDebug.c  Debug.h Debugger.h SrcInter.h Source.h
+	icc /c $(CFLAGS) /Fo$@ NoDebug.c
+
+objs\Register.obj:  Register.c Debug.h Debugger.h Register.h
+	icc /c $(CFLAGS) /Fo$@ Register.c
+
+objs\Source.obj:    Source.c   Debug.h Debugger.h SrcInter.h Source.h
+	icc /c $(CFLAGS) /Fo$@ Source.c
+
+objs\SrcDisp.obj:   SrcDisp.c  Debug.h Debugger.h SrcInter.h Source.h SrcDisp.h
+	icc /c $(CFLAGS) /Fo$@ SrcDisp.c
+
+objs\Watch.obj:     Watch.c    Debug.h Debugger.h SrcInter.h Source.h Watch.h
+	icc /c $(CFLAGS) /Fo$@ Watch.c
+
+#
+#   Define the rules for Sherlock.
+#
+objs\Debug2.obj:    Debug.C    Debug.h Debugger.h Source.h SrcInter.h Watch.h \
+		BrkPoint.h Except.h Register.h SrcDisp.h
+	icc /c /DSHERLOCK $(CFLAGS) /Fo$@ Debug.c
+
+objs\SrcDisp2.obj:  SrcDisp.c  Debug.h Debugger.h SrcInter.h Source.h SrcDisp.h
+	icc /c /DSHERLOCK $(CFLAGS) /Fo$@ SrcDisp.c
+
+objs\Disp2.obj:     Dispatch.c Debug.h Debugger.h SrcInter.h Source.h
+	icc /c /DSHERLOCK $(CFLAGS) /Fo$@ Dispatch.c
+
+objs\HexDmp2.obj:   HexDump.c  Debug.h Debugger.h SrcInter.h Source.h
+	icc /c /DSHERLOCK $(CFLAGS) /Fo$@ HexDump.c
+
+debug.exe : $(DEBUG_OBJS) $(OBJS)
+	link386 @<<debug.lrf
+$(DEBUG_OBJS: = +^
+)+
+$(OBJS: = +^
+)
+$@
+objs\$*.map
+$(LIBS: = +^
+)
+Debug.def $(LFLAGS) /PMTYPE:NOVIO ;
+<<NOKEEP
+
+sherlock.exe : $(SHERLOCK_OBJS) $(OBJS)
+	link386 @<<debug.lrf
+$(SHERLOCK_OBJS: = +^
+)+
+$(OBJS: = +^
+)
+$@
+objs\$*.map
+$(LIBS: = +^
+)
+Debug.def $(LFLAGS) /PMTYPE:VIO;
+<<NOKEEP

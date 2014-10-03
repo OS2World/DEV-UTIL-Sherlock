@@ -1,0 +1,26 @@
+#/*
+#**  Sherlock - Copyright 1992, 1993, 1994
+#**    Harfmann Software
+#**    Compuserve: 73147,213
+#**    All rights reserved
+#*/
+
+all: vf.dll main.exe
+
+.SUFFIXES:
+.SUFFIXES: .obj .cpp
+
+vf.obj:     vf.cpp  vf.h
+    icc /Ti /c /O+ /Ge- /Q vf.CPP
+
+vf.dll:     vf.obj basic.def
+	icc /Ti /B"/NOE" /Fevf.dll  vf BASIC.DEF
+
+vf.lib:     vf.dll
+	IMPLIB vf.LIB vf.DLL
+
+main.obj:   main.cpp	vf.h
+	icc /Ti /O+ /Q	/c main.CPP
+
+main.exe:   main.obj vf.lib
+	icc /Ti /Q main vf.lib

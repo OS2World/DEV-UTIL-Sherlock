@@ -1,0 +1,52 @@
+#/*
+#**  Sherlock - Copyright 1992, 1993, 1994
+#**    Harfmann Software
+#**    Compuserve: 73147,213
+#**    All rights reserved
+#*/
+PROJFILE = HLL.mak
+
+
+#
+# Compile & link flags.
+#
+CFLAGS	= /BATCH /W3 /G3s /Ge- /Sm
+LFLAGS	= /NOI /BATCH  /FAR /PACKC /PACKD /PMTYPE:NOVIO /ST:16384 /MAP
+
+DEF_FILE = HLL.def
+MAPFILE = HLL.map
+LINKER  = link386
+CC  = icc
+LRF  = echo > NUL
+
+OBJS  = HLL.obj HllData.obj HllSrc.obj HllSupp.obj
+
+all: HLL.dll
+
+.SUFFIXES:
+.SUFFIXES: .obj .c
+
+HLL.obj:     HLL.c	 ..\SrcInter.h HLL.h
+
+HLLData.obj: HLLData.c	 ..\SrcInter.h HLL.h
+
+HLLSrc.obj:  HLLSrc.c	 ..\SrcInter.h HLL.h
+
+HLLSupp.obj: HLLSupp.c	 ..\SrcInter.h HLL.h
+
+
+HLL.dll: $(OBJS) $(DEF_FILE)
+	$(LINKER) @<< HLL.lrf
+$(OBJS: = +^
+)
+$@
+$(MAPFILE)
+$(LIBS: = +^
+)
+$(DEF_FILE) $(LFLAGS_G) $(LFLAGS);
+<<NOKEEP
+	Copy *.dll ..
+
+
+.c.obj :
+        $(CC) /c $(CFLAGS) /Fo$@ $<

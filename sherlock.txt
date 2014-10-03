@@ -1,0 +1,452 @@
+Sherlock - A Programmers helper.
+
+Introduction
+
+Trying to debug an application is usually a mystery.  Most of the time, the
+debugging is at the developers computer where source code is available and
+source level debuggers are able to quickly and easily locate problems. At
+this point it is easy to find problems and correct them.  At this point,
+there is little challenge to the mystery.
+
+Unfortunately, after a program has gone out the door, it is inevitable that
+a problem occurs at the end user's site.  Although we programmers might be
+able to reproduce the problem if an exact description is given, sometimes
+we cannot due to one reason or another.  If a trace of what the program is
+currently doing at the customers site was available, then the developer would
+have a better idea of what went wrong and how to fix the problem.  Giving
+the user access to the original source may not be desirable, and while
+reporting the linear address in OS/2 2.0 may make the end user feel good,
+it is useless to the developer since the machine configurations may be
+different and therefore will have different addresses.  This is were
+programmers have a real mystery.  Unfortunately, usually with too many
+the number of pieces missing to allow the mystery to be solved.
+
+This introduces a need into the developers market.  This need is to allow
+any end user with minimal instructions to provide the type of debugging
+information that the developer really needs.  Sherlock is a program to aid
+fellow programmers in this remote diagnosis of program problems.  This is
+done through an interfaceless debugger.  This debugger will load the desired
+executable for debugging, start the program and then continue until an
+exception occurs.  When an exception occurs, the entire program state
+is dumped.  Each thread will have the current register thread dumped and
+then attempt to trace the stack back to the root node of the thread.
+
+Installation
+
+Sherlock may be installed into any directory that is in you PATH statement.
+It is suggested that you create a new directory to store the files and add
+this directory to your PATH statement in CONFIG.SYS.  If you have debugging
+DLLs, they MUST be installed in the same directory as Sherlock.  Sherlock
+will search for the debugging DLLs only in the directory where Sherlock is
+stored.  For example:
+
+C:      Make Drive C current.
+MKDIR C:\SHERLOCK       Create the Sherlock  directory.
+CHDIR C:\SHERLOCK       Change to the Sherlock  directory.
+COPY A:*.EXE *.EXE      Copy the executable.
+COPY A:*.DLL *.DLL      Copy the debugging  DLLs.
+E CONFIG.SYS    Add C:\SHERLOCK to the PATH 
+                        statement.
+
+Usage
+
+Usage of SHERLOCK is simple, even for most end users.  The target program is
+started as it would normally be started with the addition of listing
+Sherlock ahead of the target application.  For example, if you wish to test
+the program xyz.exe with the parameters a b.
+       Normal:
+       xyz a b
+
+       With Sherlock:
+       Sherlock xyz a b
+
+Sherlock supports only one command line argument -L which will specify the
+name of a new output file.  The name of the output file is specified
+immediately after the L.  For example:
+
+        Sherlock -LCatch.log Catch.exe
+
+What will I get out of Sherlock?
+
+What Sherlock will generate is a log file of what the operator of a debugger
+would see.  Sherlock will try to load debugging information for each module
+which is loaded.  Sherlock's ability to decode debugging information is based
+upon loading a DLL to support each different debugging information format.
+Sherlock is capable of supporting many different debugging formats at the
+same time. Each module which is loaded by the target program will be sent to
+the support DLLs to ask whether it supports the debugging format of the
+module.  If it says yes, no other support DLLs will be ask whether they
+support the debugging format of the module.
+
+Currently, only the following formats are supported:
+
+        SYM files created by mapsym.
+        Microsoft C V6.0 debugging format
+        IBM C-Set/2 Version 1.0 and 2.x
+
+VisualAge is not supported currently.
+
+Sample Output
+
+Sherlock will produce a log file with all of the output from Sherlock.  The
+log file is named SHERLOCK.LOG or whatever you specify on Sherlock's command
+line.  This file is placed into the current directory.  Each execution of
+Sherlock will overwrite any existing log file.  The output will be as
+described below.
+
+Sherlock will log all exceptions that occur within the application to the log
+file.  Note that there are many types of exceptions.  Some are normal or
+diagnostic such as guard page exceptions.  Other exceptions are fatal, but
+can be recovered from.  Access Violations while usually fatal can be
+recovered from.  For example, C-Set/2 (Copyright IBM) can insert an exception
+handler which if not overridden will print a register state dump.  If
+overridden, it is possible to recover from the exception and continue
+program execution.
+
+Sherlock will log ALL exceptions to the log file until the program has
+terminated. Each exception will be dumped as a set of blocks of the format:
+Exception block
+Register block
+Traceback from current function to first function.
+Code dump
+
+For the descriptions of the different blocks below, the following program
+will be used:
+
+/*
+** Main entrance routine.
+*/
+#define INCL_DOSDATETIME
+#include <os2.h>
+
+int main(int argc, char **argv);
+int main(int argc, char **argv)
+{
+    DosOpen((PSZ)    0,         /* pszFileName */
+            (PHFILE) 0,         /* pHf         */
+            (PULONG) 0,         /* pulAction   */
+                     0,         /* cbFile          */
+                     0,         /* ulAttribute */
+                     0,         /* fsOpenFlags */
+                     0,         /* fsOpenMode  */
+            (PEAOP2) 0);        /* peaop2      */
+    return 0;
+}
+
+This program will cause a GP fault somewhere within OS/2 since a number of
+NULL pointers is being passed in.  Note that the program will compile
+correctly without a complaint from the compiler.
+
+Exception Block
+The "Exception type" block will list the type of problem that was hit and
+where. (e.g. - Except#: c0000005 Access Violation).  Some of the information
+in this block is gibberish if you have not worked with OS/2's exception
+mechanism.  Some of the information is gibberish even if you do work with
+OS/2's exception mechanism.  (Please refer to the BSEXCPT.H file from the
+OS/2 Toolkit for details as to what the Except # parameters mean.)  The text
+printed to the right of the 'Except #" is the description as defined by IBM.
+Note that you and others might define other exception numbers.  These might
+be used as signals to your application to signal some event.
+
+For this exception number, an access violation occurred.  The exception
+address is the location where the error was detected.  This is usually the
+INSTRUCTION POINTER when the exception occurred.  For this exception type,
+there are two exception parameters.  The first for access violation is the
+address that caused the problem.  Zero would be a NULL pointer.  How that
+pointer was obtained cannot be found from this block.  It could have been
+a direct memory reference, or an indirect reference through one of the index
+registers in the CPU.  The module name while useful, is also misleading It
+is NOT the name of the module that actually had the fault, but the name of
+the program that was executing.  Note that in this case, there is no
+debugging information available where the exception actually occurred, so
+there is no function information available.
+
+Exception type 1 at 1a050179
+  Except #: c0000005  Access violation
+  Flags:    00000000
+  Next Rec: 00000000
+  Except Addr: 1a050179
+  Num Parms: 2
+  Except 0: 00000000
+  Except 1: ffffffff
+  Module:   D:\SHERLOCK\CATCH\CATCH.EXE
+  Size:     18778
+  Timestamp:Mon Dec  6 21:27:20 1993
+
+  Lo Function: UNKNOWN
+  Hi Function: UNKNOWN
+
+Exception in thread: 1          ID of the thread where the exception occurred.
+
+Register block
+Each thread of execution within the executing program will have its register
+set dumped.  The entire register set is dumped.  If you have the assembler
+source code for the section of code where the exception occurs, then you can
+relate the registers to what the program was trying to accomplish.
+Additionally, the segment register information is dumped.  These registers
+may be useful if you examine the limits.  For example, if a reference using
+the 'FS' register is made at offset of 0x32, then an exception will occur.
+By checking FSLim, then you would see that you have indexed too far into
+that segment.
+
+For the test case given above, you can use the information from the Exception
+Block to possibly gather additional information.  For example, we know from
+above that the address 0 was causing a problem.  IF it was from a register
+index, then it would have to be from either the EBX, ESI or EDI registers.
+Without more information, you are still stuck.  You do not know which
+register is causing the problem, or if a register is causing a problem.
+
+Pid: 000000f0   Tid:    00000001
+Cmd:        0   Value:  00716668
+Addr: 0002294c  Buffer: 00037fd4
+Len:  00000024  Index:  00000000
+MTE:  0000030c
+EAX: 00172a80  EBX: 00000000  ECX: 00060010  EDX:  00060007
+ESP: 0002291c  EBP: 00022ae4  ESI: 00000000  EDI:  00000000
+EIP: 0000c0a0  EFLAGS: 00002206
+
+Carry Parity Aux Zero Sign Trap IntE Dir Flow IOPL Nested  Resume
+
+  NC    PE      0  NE    0    0    1   DN  NO    2    0       0
+CSLim 1c000000  CSBase: 00000000  CSAcc: df  CSAttr: d0   CS:005b
+DSLim 1c000000  DSBase: 00000000  DSAcc: f3  DSAttr: d0   DS:0053
+ESLim 1c000000  ESBase: 00000000  ESAcc: f3  ESAttr: d0   ES:0053
+FSLim 00000031  FSBase: 00050030  FSAcc: f3  FSAttr: 00   FS:150b
+GSLim 00000000  GSBase: 00000000  GSAcc: 00  GSAttr: 00   GS:0000
+SSLim 1c000000  SSBase: 00000000  SSAcc: f3  SSAttr: d0   SS:0053
+
+Traceback from current function to first function invoked
+
+The traceback is the block that answers the question of how you got to where
+the problem was detected.  Sherlock takes the EBP, EIP of the current thread
+given by the register dump and tracks through the stack to where the program
+starts.  At each EBP location found, Sherlock will dump any location
+information that is available.  Sherlock assumes that EBP is used to save the
+Stack Frame base on every function call.  If this is not the case, then
+Sherlock may skip over functions in its trace.  Sherlock also assumes that
+EBP is pushed onto the stack immediately after the function has been called.
+If this is not the case, then Sherlock may become confused and give erratic
+results.  Sherlock will follow the EBP back to the beginning of the program.
+
+Each block contains the EBP/EIP.  These are the Stack Frame pointer and the
+EIP of the routine.  The EIP is then translated by Sherlock into the Base
+Offset/ Relative Offset/ Object length/Object/ Module.  These can be used to
+translate into source locations if a map file of the module is known.  The
+Object is the Object or Segment in the linker's map file.  The Relative
+Offset is the offset within the Object.  By checking function addresses or
+line number information within the map file you can translate the Relative
+Offset into a function.
+
+For unsupported debugging modules, a Hi and Lo function marker are also
+given.  These may be helpful or may not since these are based upon the
+exported functions of a module.  If a module only contains only a few
+functions exported, then the function markers will most likely be useless.
+
+EBP:    00022ae4EIP:    1a02c0a0
+  Base: 1a020000Rel:    0000c0a0Len:    00010000
+  Object: 00000002
+  Module:   C:\OS2\DLL\DOSCALL1.DLL
+  Lo Function: DOSREAD
+  Hi Function: DOSCOPY
+
+EBP:    00022b14EIP:    1a02a958
+  Base: 1a020000Rel:    0000a958Len:    00010000
+  Object: 00000002
+  Module:   C:\OS2\DLL\DOSCALL1.DLL
+  Lo Function: DOSREAD
+  Hi Function: DOSCOPY
+
+The Function/Source/Line are the location where the program was trying to
+execute for the first block.  In later blocks, this is the location of where
+the prior function (earlier in the listing) was called from.  This entry
+shows the result of using one of the debugging support DLLs.  The function,
+source module and line number are therefore accessible and dumped.
+
+EBP:    00022b3cEIP:    00010023
+  Base: 00010000Rel:    00000023Len:    00010000
+  Object: 00000001
+  Module:   C:\WORK\DEBUG\CATCH.EXE
+  Function: main
+  Source:   CATCH.C
+  Line:     9
+
+This entry shows the same module as the above entry, but the area where the
+stack traced back to does not have debugging information, so the bounding
+functions are supplied as markers.  If the source code can be found, the
+source code will be listed after these blocks.  If there is no debugging
+information available, then a disassembly of the code will occur.  This
+disassembly will be where ever the EIP for the block is located.
+
+EBP:    00022b58EIP:    00010596
+  Base: 00010000Rel:    00000596Len:    00010000
+  Object: 00000001
+  Module:   C:\WORK\DEBUG\CATCH.EXE
+  Lo Function: _RunExitList
+  Hi Function: UNKNOWN
+
+EIP: 1a02c834, DLL: C:\OS2\DLL\DOSCALL1.DLL Func:  
+DOS32R3EXCEPTIONDISPATCHER
+1a02c834  PUSH  EBP
+1a02c835  MOV   EBP,ESP
+1a02c837  SUB   ESP,0x00000100
+1a02c83d  PUSH  EDI
+1a02c83e  PUSH  ESI
+1a02c83f  MOV   EAX,DWORD PTR [EBP 0xc]
+1a02c842  CMP   DWORD PTR [EAX],0xc0010002
+1a02c848  JE    $ 0x08
+1a02c84a  CMP   DWORD PTR [EAX],0xc0010003
+1a02c850  JNE   $ 0x0c
+1a02c852  MOV   DWORD PTR [EBP 0],0x00000000
+
+
+Current Limitations
+
+The current release has the current limitations:
+
+1)      Only the program started will be monitored.  Any subprocesses started
+        by the program will not be monitored.
+
+2)      The distributed version does not have the debugging DLLs.
+
+3)      The first release has an annoying flashing effect.  I am still
+        working to find why this is happening.  Hopefully the next version
+        will have this fixed.
+
+4)      Crossing 16-32 bit function calls is not currently supported for the
+        stack trace.
+
+5)      Tracing of 16 bit stacks is difficult and may be incorrect for code
+        with near calls in the trace.
+
+Copyright and Legal Information
+
+Sherlock is Copyrighted (c) 1992 - 1995 by Harfmann Software.
+
+
+Adding new Interfaces
+
+Sherlock is designed to look in the startup directory where Sherlock has been
+installed to find support DLLs.  Any file  with a DLL extension is loaded and
+examined for two  functions to be exported by name called:
+
+    isKnownModule
+    linkPriority
+
+Link Priority
+Link priority is used to determine the order used to try and resolve symbolic
+information.  When Sherlock first starts, it tries to load every DLL in the
+Sherlock directory assuming that it is a support DLL for Sherlock.  It will
+then invoke the linkPriority function to build an internal linked list of
+support DLLs.
+
+/*
+** Answer the linkage priority.
+** Return 1 for insert in front of list
+**      (first crack  at linking)
+** Return 0 for add to end of list.
+**      (last crack  at linking)
+*/
+int _System linkPriority(void)
+{
+    return 1;
+}
+
+When Sherlock tries to load a module, it iterates through each support DLL in
+the linked list to try and determine whether the debugging format of the
+module is known to that support DLL.  For example, the SYM file support is
+given 0 priority and HLL (C Set++) is given 1 priority to allow the HLL
+format to take precedence over the SYM format.
+
+Supporting a Debugging Format
+
+When a module is loaded, Sherlock iterates through all of the support DLLs to
+determine if any of them can find the debugging information for the module.
+If the module does understand the format, it returns true, otherwise it
+returns false.  This is done with the isKnownModule function shown below:
+
+/*
+** Answer whether the module named is a HLL module.
+** If so, set the function pointers and return true.
+*/
+int _System isKnownModule(DebugModule *module,
+                           int (* _System DispatchCommand)
+                                        (int  command),
+                                         DebugBuffer *buffer)
+Where:
+module - Pointer to a structure that will be used to reference the module for
+as long as the module is loaded.  All elements except AuxData and the
+function pointers should be considered static and should not be changed.
+AuxData and the function pointers should be filled in if the module
+understands the debugging format of the module.
+DispatchCommand - Function pointer to be used by the support DLL if it needs
+to use the DosDebug API.
+buffer - Pointer to the buffer used by DosDebug().
+
+typedef struct _DebugModule {
+    void   *nextModule; // Internal - DO NOT MODIFY
+    char   *name;               // Name of file as returned by  DosQueryModuleName
+    void   *AuxData;            // Spare pointer for support  DLL usage
+    void   *ViewData;           // Internal - DO NOT MODIFY
+    time_t  fTimestamp; // Time stamp of the module
+    ULONG   fileSize;           // File size of the module
+    ULONG   MTE;        // Module handle
+    ULONG   typeFlags;  // Module flags return by  DosQueryAppType
+
+    /*
+    ** Module cleanup.  Free any support structures.
+    */
+    void    (* _System FreeModule)(
+                       struct _DebugModule *module);    /* Module  handle */
+
+    /*
+    ** Source functions.
+    */
+    int     (* _System FindSource)(             /* 1 found / 0  - not found      */
+                        struct _DebugModule *module,    /* Module  handle */
+                        ULONG eipOffset,/* EIP for function to  find  */
+                        char *funcName, /* Buffer for function  name  */
+                        char *sourceName,       /* Buffer for source  code       */
+                        ULONG *lineNum);/* Pointer to line  number       */
+
+    ULONG   (* _System FindSourceLine)( /* Return offset of  file/line*/
+                        struct _DebugModule *module,    /* Module  handle */
+                        int line,               /* Line to find          */
+                        char *fileName);/* File name             */
+
+    ULONG   (* _System FindFuncAddr) (  /* Return offset of  function */
+                        struct _DebugModule *module,    /* Module  handle */
+                        char *name);            /* Function name.                 */
+
+    /*
+    ** Variable functions.
+    */
+    int     (* _System GetName)(                /* State return  value from above       */
+                        struct _DebugModule *module,    /* Module  handle */
+                        State *state,           /* State information to  retrieve.
+                                                ** Contains name of variable.  */
+                        State *state2);         /* If !NULL: state2  is element of
+                                                ** structure given in state.  */
+
+
+    int     (* _System GetArray)(               /* State return  value from above */
+                        struct _DebugModule *module,    /* Module  handle */
+                        State *state,           /* Name of array         */
+                        State *state2);         /* Index of element  to retrieve */
+
+    int     (* _System GetNumMembers)(  /* Return # of  elements 0 if not a structure */
+                        struct _DebugModule *module,    /* Module  handle */
+                        State *state);          /* Variable to query and  program state */
+
+    /*
+    ** Get the name of the index'th structure element
+    */
+    int     (* _System GetMemberIndex)( /* State return  value from above */
+                        struct _DebugModule *module,    /* Module  handle */
+                        State *state,           /* Program state          */
+                        int MemberIndex,/* Index of element to  retrieve  */
+                        char *name);            /* Buffer to return name  into   */
+} DebugModule;
+
+The FreeModule and FindSource function pointers must be filled in to support
+the current functionality of Sherlock.  The other function pointers may be
+used in future versions.

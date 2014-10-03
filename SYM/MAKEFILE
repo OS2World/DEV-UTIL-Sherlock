@@ -1,0 +1,58 @@
+#/*
+#**  Sherlock - Copyright 1992, 1993, 1994
+#**    Harfmann Software
+#**    Compuserve: 73147,213
+#**    All rights reserved
+#*/
+PROJFILE = Sym.mak
+
+#
+# Debugging version
+#
+#CFLAGS  = /BATCH /Ti /W3 /G3s /Ge- /Sm
+#LFLAGS  = /NOI /BATCH	/FAR /PACKC /PACKD /PMTYPE:NOVIO /ST:16384 /CO /MAP /LI
+
+#
+# Final version
+#
+CFLAGS	= /BATCH /W3 /G3s /Ge- /Sm
+LFLAGS	= /NOI /BATCH /FAR /PACKC /PACKD /PMTYPE:NOVIO /ST:16384
+
+DEF_FILE = Sym.def
+MAPFILE = Sym.map
+LINKER  = link386
+CC  = icc
+LRF  = echo > NUL
+
+OBJS  = Sym.obj SymSrc.obj
+# SymData.obj SymSupp.obj
+
+all: Sym.dll
+
+.SUFFIXES:
+.SUFFIXES: .obj .c
+
+Sym.obj:     Sym.c	 ..\SrcInter.h MapSym.h
+
+SymSrc.obj:  SymSrc.c	 ..\SrcInter.h MapSym.h
+
+SymData.obj: SymData.c	 ..\SrcInter.h MapSym.h
+
+SymSupp.obj: SymSupp.c	 ..\SrcInter.h MapSym.h
+
+
+Sym.dll: $(OBJS) $(DEF_FILE)
+	$(LINKER) @<< Sym.lrf
+$(OBJS: = +^
+)
+$@
+$(MAPFILE)
+$(LIBS: = +^
+)
+$(DEF_FILE) $(LFLAGS_G) $(LFLAGS);
+<<NOKEEP
+	Copy *.dll ..
+
+
+.c.obj :
+        $(CC) /c $(CFLAGS) /Fo$@ $<

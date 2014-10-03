@@ -1,0 +1,57 @@
+#/*
+#**  Sherlock - Copyright 1992, 1993, 1994
+#**    Harfmann Software
+#**    Compuserve: 73147,213
+#**    All rights reserved
+#*/
+PROJ = CV32
+PROJFILE = CV32.mak
+
+#
+# Debugging version
+#
+#CFLAGS  = /BATCH /Ti /W3 /G3s /Ge- /Sm
+#LFLAGS  = /NOI /BATCH /FAR /PACKC /PACKD /PMTYPE:NOVIO /ST:16384 /CO /MAP /LI
+
+#
+# Final version
+#
+CFLAGS	= /BATCH /W3 /G3s /Ge- /Sm
+LFLAGS	= /NOI /BATCH /FAR /PACKC /PACKD /PMTYPE:NOVIO /ST:16384
+
+DEF_FILE = cv32.def
+MAPFILE = cv32.map
+LINKER  = link386
+CC  = icc
+LRF  = echo > NUL
+
+OBJS  = CV32.obj CVData.obj CVSrc.obj CVSupp.obj
+
+all: $(PROJ).dll
+
+.SUFFIXES:
+.SUFFIXES: .obj .c
+
+CV32.obj:   CV32.c	..\SrcInter.h cv.h cv32.h
+
+CVData.obj: CVData.c	..\SrcInter.h cv.h cv32.h
+
+CVSrc.obj:  CVSrc.c	..\SrcInter.h cv.h cv32.h
+
+CVSupp.obj: CVSupp.c	..\SrcInter.h cv.h cv32.h
+
+
+$(PROJ).dll : $(OBJS) $(DEF_FILE)
+        $(LINKER) @<<$(PROJ).lrf
+$(OBJS: = +^
+)
+$@
+$(MAPFILE)
+$(LIBS: = +^
+)
+$(DEF_FILE) $(LFLAGS_G) $(LFLAGS);
+<<NOKEEP
+	copy *.dll ..
+
+.c.obj :
+        $(CC) /c $(CFLAGS) /Fo$@ $<

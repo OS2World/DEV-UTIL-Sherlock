@@ -1,0 +1,104 @@
+
+Operating System/2 Program Maintenance Utility
+Version 2.001.000 Feb 16 1993
+Copyright (C) IBM Corporation 1988-1993
+Copyright (C) Microsoft Corp. 1988-1991
+All rights reserved.
+
+	icc /c /BATCH /W3 /Sm /Ss+ /G3s /Ti /Foobjs\HexDump.obj HexDump.c
+	link386 @debug.lrf
+
+Operating System/2 Linear Executable Linker
+Version 2.01.012 Nov 02 1993
+Copyright (C) IBM Corporation 1988-1993.
+Copyright (C) Microsoft Corp. 1988-1993.
+ All rights reserved.
+
+Object Modules [.obj]: objs\Debug.obj +
+Object Modules [.obj]: objs\SrcDisp.obj +
+Object Modules [.obj]: objs\Dispatch.obj +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\HexDump.obj+
+Object Modules [.obj]: objs\AsmDisp.obj +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\BrkPoint.obj	 +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\Except.obj +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\Expr.obj	 +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\NoDebug.obj	 +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\Process.obj +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\Register.obj +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\Source.obj	 +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\Watch.obj
+Run File [Debug.exe]: debug.exe
+List File [nul.map]: objs\debug.map
+Libraries [.lib]: 
+Definitions File [nul.def]: Debug.def /NOI /BATCH /FAR /PACKC /PACKD /ST:16384 /MAP /CO /PMTYPE:NOVIO ;
+	icc /c /DSHERLOCK /BATCH /W3 /Sm /Ss+ /G3s /Ti /Foobjs\HexDmp2.obj HexDump.c
+	link386 @debug.lrf
+
+Operating System/2 Linear Executable Linker
+Version 2.01.012 Nov 02 1993
+Copyright (C) IBM Corporation 1988-1993.
+Copyright (C) Microsoft Corp. 1988-1993.
+ All rights reserved.
+
+Object Modules [.obj]: objs\Debug2.obj +
+Object Modules [.obj]: objs\SrcDisp2.obj +
+Object Modules [.obj]: objs\Disp2.obj +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\HexDmp2.obj+
+Object Modules [.obj]: objs\AsmDisp.obj +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\BrkPoint.obj	 +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\Except.obj +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\Expr.obj	 +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\NoDebug.obj	 +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\Process.obj +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\Register.obj +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\Source.obj	 +
+Object Modules [.obj]:  +
+Object Modules [.obj]: objs\Watch.obj
+Run File [Debug2.exe]: sherlock.exe
+List File [nul.map]: objs\sherlock.map
+Libraries [.lib]: 
+Definitions File [nul.def]: Debug.def /NOI /BATCH /FAR /PACKC /PACKD /ST:16384 /MAP /CO /PMTYPE:VIO;
